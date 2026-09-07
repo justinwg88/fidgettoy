@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build your fidget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #201E27;
+    --deck: #2B2933;
+    --deck-line: #3A3745;
+    --text: #F2EFE9;
+    --text-dim: #9C98A8;
+    --accent: #3DC7A0;
+    --danger: #E85C5C;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  main { width: 100%; max-width: 420px; }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .sub {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin: 0 0 28px;
+    line-height: 1.5;
+  }
+
+  /* Preview */
+  .preview-wrap {
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: center;
+  }
+  .preview {
+    border-radius: 20px;
+    padding: 22px 18px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--deck-line);
+    transition: background 0.2s ease;
+    width: fit-content;
+  }
+  .keys-row { display: flex; gap: 6px; justify-content: center; }
+  .key {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.15);
+  }
+
+  /* Form */
+  fieldset {
+    border: none;
+    padding: 0;
+    margin: 0 0 24px;
+  }
+  legend {
+    font-size: 13px;
+    color: var(--text-dim);
+    padding: 0 0 10px;
+  }
+  input[type="text"] {
+    width: 100%;
+    background: var(--deck);
+    border: 1px solid var(--deck-line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    letter-spacing: 0.05em;
+  }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .hint { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+  .err { font-size: 12px; color: var(--danger); margin-top: 6px; display: none; }
+
+  .letter-pickers { display: flex; flex-direction: column; gap: 10px; }
+  .letter-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .letter-tag {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--deck);
+    border: 1px solid var(--deck-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .letter-swatches { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+  .swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .swatch.selected { border-color: var(--accent); }
+  .placeholder-note { font-size: 13px; color: var(--text-dim); }
+
+  .bg-swatches { display: flex; gap: 10px; }
+  .swatch.bg-swatch { border-radius: 10px; width: 56px; height: 40px; }
+
+  button.submit {
+    width: 100%;
+    background: var(--accent);
+    color: #0B2A22;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  button.submit:active { transform: scale(0.99); }
+
+  .confirm {
+    display: none;
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  .list-toggle {
+    margin-top: 36px;
+    background: none;
+    border: 1px solid var(--deck-line);
+    color: var(--text-dim);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    width: 100%;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  #order-list { margin-top: 16px; display: none; }
+  .order-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--deck-line);
+    font-size: 14px;
+  }
+  .order-row .mini-keys { display: flex; gap: 3px; }
+  .order-row .mini-key { width: 12px; height: 12px; border-radius: 3px; }
+  .order-row .name { font-family: 'IBM Plex Mono', monospace; flex: 1; }
+  .order-row .bg-chip { font-size: 11px; color: var(--text-dim); }
+  .empty { color: var(--text-dim); font-size: 13px; padding: 12px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Build your fidget</h1>
+  <p class="sub">Type a name, color each letter's key, then submit — I'll see it on my list.</p>
+
+  <div class="preview-wrap">
+    <div class="preview" id="preview" style="background:#F5F5F0;">
+      <div class="keys-row" id="keysRow"></div>
+    </div>
+  </div>
+
+  <fieldset>
+    <legend>Name (3–8 characters)</legend>
+    <input type="text" id="nameInput" maxlength="8" placeholder="e.g. ROXY" autocomplete="off">
+    <div class="hint">Letters and numbers, 3 to 8 characters. Each one gets its own key color.</div>
+    <div class="err" id="nameErr">Enter a name between 3 and 8 characters.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Key colors</legend>
+    <div class="letter-pickers" id="letterPickers"></div>
+    <div class="placeholder-note" id="letterPlaceholder">Type a name above to color each key.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Base color</legend>
+    <div class="bg-swatches" id="bgSwatches"></div>
+  </fieldset>
+
+  <button class="submit" id="submitBtn">Add to the list</button>
+  <div class="confirm" id="confirmMsg"></div>
+
+  <button class="list-toggle" id="listToggle">Show everyone's picks</button>
+  <div id="order-list"></div>
+</main>
+
+<script>
+  // Paste the Web App URL from your Apps Script deployment here:
+  const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+
+  const KEY_COLORS = [
+    { name: 'red', hex: '#E4402C' },
+    { name: 'green', hex: '#2E9E4D' },
+    { name: 'blue', hex: '#2D6FE0' },
+    { name: 'yellow', hex: '#F2C94C' },
+    { name: 'white', hex: '#F5F5F0' },
+    { name: 'black', hex: '#242229' },
+    { name: 'pink', hex: '#E8639B' },
+    { name: 'purple', hex: '#7A5AF8' },
+    { name: 'orange', hex: '#F2843C' }
+  ];
+  const BG_COLORS = [
+    { name: 'white', hex: '#F5F5F0' },
+    { name: 'black', hex: '#242229' }
+  ];
+
+  let letterColors = [];
+  let selectedBg = BG_COLORS[0].name;
+
+  const nameInput = document.getElementById('nameInput');
+  const letterPickers = document.getElementById('letterPickers');
+  const letterPlaceholder = document.getElementById('letterPlaceholder');
+  const keysRow = document.getElementById('keysRow');
+  const preview = document.getElementById('preview');
+  const bgSwatches = document.getElementById('bgSwatches');
+
+  function hexFor(list, name) {
+    const found = list.find(c => c.name === name);
+    return found ? found.hex : '#888';
+  }
+
+  function textColorFor(hexBg) {
+    const dark = ['#242229', '#2D6FE0', '#7A5AF8', '#E4402C'];
+    return dark.includes(hexBg) ? '#F2EFE9' : '#1A1A1A';
+  }
+
+  function rebuildLetterPickers() {
+    const name = nameInput.value.trim().toUpperCase();
+    letterPickers.innerHTML = '';
+    letterPlaceholder.style.display = name.length ? 'none' : 'block';
+
+    const newColors = [];
+    for (let i = 0; i < name.length; i++) {
+      newColors.push(letterColors[i] || KEY_COLORS[i % KEY_COLORS.length].name);
+    }
+    letterColors = newColors;
+
+    name.split('').forEach((letter, i) => {
+      const row = document.createElement('div');
+      row.className = 'letter-picker-row';
+
+      const tag = document.createElement('div');
+      tag.className = 'letter-tag';
+      tag.textContent = letter;
+      tag.style.background = hexFor(KEY_COLORS, letterColors[i]);
+      tag.style.color = textColorFor(hexFor(KEY_COLORS, letterColors[i]));
+
+      const swatchRow = document.createElement('div');
+      swatchRow.className = 'letter-swatches';
+      KEY_COLORS.forEach(c => {
+        const sw = document.createElement('div');
+        sw.className = 'swatch';
+        sw.style.background = c.hex;
+        sw.title = c.name;
+        if (letterColors[i] === c.name) sw.classList.add('selected');
+        sw.addEventListener('click', () => {
+          letterColors[i] = c.name;
+          rebuildLetterPickers();
+          updatePreview();
+        });
+        swatchRow.appendChild(sw);
+      });
+
+      row.appendChild(tag);
+      row.appendChild(swatchRow);
+      letterPickers.appendChild(row);
+    });
+  }
+
+  function updatePreview() {
+    const bgHex = hexFor(BG_COLORS, selectedBg);
+    preview.style.background = bgHex;
+    keysRow.innerHTML = '';
+    const name = nameInput.value.trim().toUpperCase();
+    name.split('').forEach((letter, i) => {
+      const k = document.createElement('div');
+      k.className = 'key';
+      const hex = hexFor(KEY_COLORS, letterColors[i]);
+      k.style.background = hex;
+      k.style.color = textColorFor(hex);
+      k.textContent = letter;
+      keysRow.appendChild(k);
+    });
+    if (!name.length) {
+      const placeholder = document.createElement('div');
+      placeholder.style.color = selectedBg === 'black' ? '#6a6775' : '#c9c6bd';
+      placeholder.style.fontFamily = "'IBM Plex Mono', monospace";
+      placeholder.style.fontSize = '13px';
+      placeholder.style.padding = '4px 10px';
+      placeholder.textContent = 'type a name';
+      keysRow.appendChild(placeholder);
+    }
+  }
+
+  nameInput.addEventListener('input', () => {
+    document.getElementById('nameErr').style.display = 'none';
+    rebuildLetterPickers();
+    updatePreview();
+  });
+
+  BG_COLORS.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'swatch bg-swatch';
+    el.style.background = c.hex;
+    el.title = c.name;
+    if (c.name === selectedBg) el.classList.add('selected');
+    el.addEventListener('click', () => {
+      selectedBg = c.name;
+      document.querySelectorAll('.bg-swatches .swatch').forEach(s => s.classList.remove('selected'));
+      el.classList.add('selected');
+      updatePreview();
+    });
+    bgSwatches.appendChild(el);
+  });
+
+  rebuildLetterPickers();
+  updatePreview();
+
+  document.getElementById('submitBtn').addEventListener('click', async () => {
+    const name = nameInput.value.trim().toUpperCase();
+    const nameErr = document.getElementById('nameErr');
+    let valid = true;
+
+    if (name.length < 3 || name.length > 8 || !/^[A-Z0-9]+$/.test(name)) {
+      nameErr.style.display = 'block';
+      valid = false;
+    }
+    if (!valid) return;
+
+    const order = {
+      name: name,
+      letterColors: letterColors.slice(0, name.length),
+      bgColor: selectedBg,
+      ts: Date.now()
+    };
+
+    const confirmMsg = document.getElementById('confirmMsg');
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(order)
+      });
+      confirmMsg.style.color = 'var(--accent)';
+      confirmMsg.textContent = 'Added to the list!';
+      confirmMsg.style.display = 'block';
+      nameInput.value = '';
+      letterColors = [];
+      rebuildLetterPickers();
+      updatePreview();
+      if (document.getElementById('order-list').style.display === 'block') {
+        loadOrders();
+      }
+    } catch (e) {
+      confirmMsg.textContent = 'Something went wrong saving that — try again.';
+      confirmMsg.style.color = 'var(--danger)';
+      confirmMsg.style.display = 'block';
+    }
+  });
+
+  async function loadOrders() {
+    const container = document.getElementById('order-list');
+    container.innerHTML = '';
+    let list = [];
+    try {
+      const res = await fetch(SCRIPT_URL);
+      list = await res.json();
+    } catch (e) {
+      list = [];
+    }
+    if (!list.length) {
+      container.innerHTML = '<div class="empty">No orders yet.</div>';
+      return;
+    }
+    list.slice().reverse().forEach(o => {
+      const row = document.createElement('div');
+      row.className = 'order-row';
+
+      const miniKeys = document.createElement('div');
+      miniKeys.className = 'mini-keys';
+      (o.letterColors || []).forEach(cn => {
+        const mk = document.createElement('div');
+        mk.className = 'mini-key';
+        mk.style.background = hexFor(KEY_COLORS, cn);
+        miniKeys.appendChild(mk);
+      });
+
+      const nm = document.createElement('div');
+      nm.className = 'name';
+      nm.textContent = o.name;
+
+      const bg = document.createElement('div');
+      bg.className = 'bg-chip';
+      bg.textContent = o.bgColor + ' base';
+
+      row.appendChild(miniKeys);
+      row.appendChild(nm);
+      row.appendChild(bg);
+      container.appendChild(row);
+    });
+  }
+
+  document.getElementById('listToggle').addEventListener('click', async () => {
+    const container = document.getElementById('order-list');
+    const btn = document.getElementById('listToggle');
+    const show = container.style.display !== 'block';
+    container.style.display = show ? 'block' : 'none';
+    btn.textContent = show ? 'Hide the list' : "Show everyone's picks";
+    if (show) await loadOrders();
+  });
+</script>
+</body>
+</html>
